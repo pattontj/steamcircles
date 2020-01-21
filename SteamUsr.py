@@ -22,19 +22,23 @@ class SteamUsr:
         # for friend in friends_api["friendslist"]["friends"]:
         #    self.friends.append(friend["steamid"])
 
-    def populateFriendsList(self, api):
-        friendsList = None
-        try:
-            friendsList = api.ISteamUser.GetFriendList(
-                steamid=self.steam_id, relationship="friend", format="json")
-        except Exception:
-            pass
+    def populateFriendsList(self, api, depth=1):
+        if depth == 0:
+            return
+        else:
+            friendsList = None
+            try:
+                friendsList = api.ISteamUser.GetFriendList(
+                    steamid=self.steam_id, relationship="friend", format="json")
+            except Exception:
+                pass
 
-        if friendsList:
-            for friend in friendsList["friendslist"]["friends"]:
-                # print(friend["steamid"])
-                self.friends.append(SteamUsr(steam_id=friend["steamid"]))
-
+            if friendsList:
+                for friend in friendsList["friendslist"]["friends"]:
+                    # print(friend["steamid"])
+                    usr = SteamUsr(steam_id=friend["steamid"])
+                    usr.populateFriendsList(api, depth-1)
+                    self.friends.append(usr)
 
 # Apply names to usrs, submits requests in batches of 20
 def applyNamesToSteamUsrs(api, itr):
